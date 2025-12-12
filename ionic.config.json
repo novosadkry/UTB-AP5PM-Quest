@@ -1,0 +1,7 @@
+{
+  "name": "UTB-AP5PM-Quest",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
