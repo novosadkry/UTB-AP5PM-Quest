@@ -1,8 +1,14 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import ExploreContainer from '../components/ExploreContainer';
-import './Tab1.css';
+import { IonContent, IonHeader, IonPage, IonText, IonTitle, IonToolbar } from '@ionic/react';
+import ExploreContainer from '@components/ExploreContainer';
+import { firebaseApp } from '@/firebase';
+import { getAuth } from 'firebase/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
+
+const auth = getAuth(firebaseApp);
 
 const Tab1: React.FC = () => {
+  const [user] = useAuthState(auth);
+
   return (
     <IonPage>
       <IonHeader>
@@ -17,6 +23,7 @@ const Tab1: React.FC = () => {
           </IonToolbar>
         </IonHeader>
         <ExploreContainer name="Tab 1 page" />
+        <IonText>{user ? `Přihlášen jako: ${user.email}` : 'Není přihlášen'}</IonText>
       </IonContent>
     </IonPage>
   );

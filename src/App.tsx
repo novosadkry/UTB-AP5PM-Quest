@@ -11,9 +11,11 @@ import {
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { ellipse, square, triangle } from 'ionicons/icons';
-import Tab1 from './pages/Tab1';
-import Tab2 from './pages/Tab2';
-import Tab3 from './pages/Tab3';
+import Tab1 from '@/pages/tabs/Tab1';
+import Tab2 from '@/pages/tabs/Tab2';
+import Tab3 from '@/pages/tabs/Tab3';
+import SignIn from '@/pages/auth/SignIn';
+import SignUp from '@/pages/auth/SignUp';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -44,6 +46,7 @@ import '@ionic/react/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import AuthRoute from './AuthRoute';
 
 setupIonicReact();
 
@@ -52,15 +55,21 @@ const App: React.FC = () => (
     <IonReactRouter>
       <IonTabs>
         <IonRouterOutlet>
-          <Route exact path="/tab1">
+          <Route exact path="/signin">
+            <SignIn />
+          </Route>
+          <Route exact path="/signup">
+            <SignUp />
+          </Route>
+          <AuthRoute exact path="/tab1">
             <Tab1 />
-          </Route>
-          <Route exact path="/tab2">
+          </AuthRoute>
+          <AuthRoute exact path="/tab2">
             <Tab2 />
-          </Route>
-          <Route path="/tab3">
+          </AuthRoute>
+          <AuthRoute path="/tab3">
             <Tab3 />
-          </Route>
+          </AuthRoute>
           <Route exact path="/">
             <Redirect to="/tab1" />
           </Route>
