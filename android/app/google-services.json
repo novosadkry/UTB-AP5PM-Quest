@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "672556110870",
+    "project_id": "utb-ap5pm-quest",
+    "storage_bucket": "utb-ap5pm-quest.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672556110870:android:7af107f97f069a77891137",
+        "android_client_info": {
+          "package_name": "io.ionic.starter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "672556110870-3kbaul8v8m2373nh4rrmehai5jq56ut2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhbRaSLcH3taVYQnBztH3nkZE96Bt03OA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "672556110870-3kbaul8v8m2373nh4rrmehai5jq56ut2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
