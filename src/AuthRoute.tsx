@@ -8,14 +8,16 @@ type AuthRouteProps = React.PropsWithChildren<{
 }>;
 
 const AuthRoute: React.FC<AuthRouteProps> = ({
-  children, path, exact,
-}: AuthRouteProps) => {
+  children,
+  path,
+  exact,
+}) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return null;
   }
-  
+
   return (
     <Route
       path={path}

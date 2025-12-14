@@ -87,7 +87,7 @@ const SignUp: React.FC = () => {
                         placeholder="user@example.com"
                         autocomplete="email"
                         value={email}
-                        onIonChange={(e) => setEmail(e.detail.value ?? '')}
+                        onIonInput={(e) => setEmail(e.detail.value ?? '')}
                       >
                         <IonIcon icon={mailOutline} slot="start" />
                       </IonInput>
@@ -100,7 +100,7 @@ const SignUp: React.FC = () => {
                         placeholder="••••••••"
                         autocomplete="new-password"
                         value={password}
-                        onIonChange={(e) => setPassword(e.detail.value ?? '')}
+                        onIonInput={(e) => setPassword(e.detail.value ?? '')}
                       >
                         <IonIcon icon={lockClosedOutline} slot="start" />
                         <IonInputPasswordToggle slot="end" />

@@ -52,6 +52,10 @@ import AuthRoute from './AuthRoute';
 
 setupIonicReact();
 
+const isAuthPage =
+  window.location.pathname === '/signin' ||
+  window.location.pathname === '/signup';
+
 const App: React.FC = () => (
   <IonApp>
     <AuthProvider>
@@ -79,15 +83,15 @@ const App: React.FC = () => (
               </Route>
             </IonRouterOutlet>
             <IonTabBar slot="bottom">
-              <IonTabButton tab="tab1" href="/tab1">
+              <IonTabButton tab="tab1" href="/tab1" disabled={isAuthPage}>
                 <IonIcon aria-hidden="true" icon={list} />
                 <IonLabel>Série</IonLabel>
               </IonTabButton>
-              <IonTabButton tab="tab2" href="/tab2">
+              <IonTabButton tab="tab2" href="/tab2" disabled={isAuthPage}>
                 <IonIcon aria-hidden="true" icon={clipboard} />
                 <IonLabel>Questy</IonLabel>
               </IonTabButton>
-              <IonTabButton tab="tab3" href="/tab3">
+              <IonTabButton tab="tab3" href="/tab3" disabled={isAuthPage}>
                 <IonIcon aria-hidden="true" icon={person} />
                 <IonLabel>Profil</IonLabel>
               </IonTabButton>

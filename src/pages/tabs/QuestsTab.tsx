@@ -11,66 +11,24 @@ import {
   IonList,
   IonCard,
   IonCardContent,
-  IonModal,
   IonButton,
-  IonInput,
-  IonTextarea,
-  IonButtons,
-  IonToggle,
   IonItem,
   IonLabel,
   IonBadge,
   IonAccordion,
   IonAccordionGroup,
   IonCheckbox,
-  IonSelect,
-  IonSelectOption,
 } from '@ionic/react';
 import { add, checkmark } from 'ionicons/icons';
 import { useQuests } from '@/contexts/QuestContext';
+import QuestModal from '@/components/QuestModal';
+import TaskModal from '@/components/TaskModal';
 
 const QuestsTab: React.FC = () => {
-  const { questLines, quests, addQuest, addTask, toggleTask } = useQuests();
+  const { questLines, quests, toggleTask } = useQuests();
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null);
-  const [questTitle, setQuestTitle] = useState('');
-  const [questDescription, setQuestDescription] = useState('');
-  const [selectedQuestLineId, setSelectedQuestLineId] = useState<string>('');
-  const [isMainQuest, setIsMainQuest] = useState(true);
-  const [taskTitle, setTaskTitle] = useState('');
-  const [taskDescription, setTaskDescription] = useState('');
-  const [isOptional, setIsOptional] = useState(false);
-
-  const handleAddQuest = () => {
-    if (selectedQuestLineId && questTitle.trim()) {
-      addQuest({
-        title: questTitle,
-        description: questDescription,
-        isMainQuest,
-        questLineId: selectedQuestLineId,
-      });
-      setQuestTitle('');
-      setQuestDescription('');
-      setSelectedQuestLineId('');
-      setIsMainQuest(true);
-      setShowQuestModal(false);
-    }
-  };
-
-  const handleAddTask = () => {
-    if (selectedQuestId && taskTitle.trim()) {
-      addTask(selectedQuestId, {
-        title: taskTitle,
-        description: taskDescription,
-        isOptional,
-      });
-      setTaskTitle('');
-      setTaskDescription('');
-      setIsOptional(false);
-      setShowTaskModal(false);
-    }
-  };
 
   const openTaskModal = (questId: string) => {
     setSelectedQuestId(questId);
@@ -163,104 +121,16 @@ const QuestsTab: React.FC = () => {
           </IonFabButton>
         </IonFab>
 
-        <IonModal isOpen={showQuestModal} onDidDismiss={() => setShowQuestModal(false)}>
-          <IonHeader>
-            <IonToolbar>
-              <IonTitle>Nový Quest</IonTitle>
-              <IonButtons slot="end">
-                <IonButton onClick={() => setShowQuestModal(false)}>Zavřít</IonButton>
-              </IonButtons>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent>
-            <IonList>
-              <IonItem>
-                <IonSelect
-                  label="Série questů"
-                  labelPlacement="stacked"
-                  value={selectedQuestLineId}
-                  onIonChange={(e) => setSelectedQuestLineId(e.detail.value)}
-                  placeholder="Vyber sérii"
-                >
-                  {questLines.map((ql) => (
-                    <IonSelectOption key={ql.id} value={ql.id}>
-                      {ql.title}
-                    </IonSelectOption>
-                  ))}
-                </IonSelect>
-              </IonItem>
-              <IonItem>
-                <IonInput
-                  label="Název"
-                  labelPlacement="stacked"
-                  value={questTitle}
-                  onIonChange={(e) => setQuestTitle(e.detail.value ?? '')}
-                  placeholder="Zadej název questu"
-                />
-              </IonItem>
-              <IonItem>
-                <IonTextarea
-                  label="Popis"
-                  labelPlacement="stacked"
-                  value={questDescription}
-                  onIonChange={(e) => setQuestDescription(e.detail.value ?? '')}
-                  placeholder="Zadej popis"
-                  rows={4}
-                />
-              </IonItem>
-              <IonItem>
-                <IonToggle checked={isMainQuest} onIonChange={(e) => setIsMainQuest(e.detail.checked)}>
-                  Hlavní Quest
-                </IonToggle>
-              </IonItem>
-            </IonList>
-            <IonButton expand="block" onClick={handleAddQuest}>
-              Vytvořit Quest
-            </IonButton>
-          </IonContent>
-        </IonModal>
+        <QuestModal
+          isOpen={showQuestModal}
+          onClose={() => setShowQuestModal(false)}
+        />
 
-        <IonModal isOpen={showTaskModal} onDidDismiss={() => setShowTaskModal(false)}>
-          <IonHeader>
-            <IonToolbar>
-              <IonTitle>Nový Úkol</IonTitle>
-              <IonButtons slot="end">
-                <IonButton onClick={() => setShowTaskModal(false)}>Zavřít</IonButton>
-              </IonButtons>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent>
-            <IonList>
-              <IonItem>
-                <IonInput
-                  label="Název"
-                  labelPlacement="stacked"
-                  value={taskTitle}
-                  onIonChange={(e) => setTaskTitle(e.detail.value ?? '')}
-                  placeholder="Zadej název úkolu"
-                />
-              </IonItem>
-              <IonItem>
-                <IonTextarea
-                  label="Popis"
-                  labelPlacement="stacked"
-                  value={taskDescription}
-                  onIonChange={(e) => setTaskDescription(e.detail.value ?? '')}
-                  placeholder="Zadej popis"
-                  rows={4}
-                />
-              </IonItem>
-              <IonItem>
-                <IonToggle checked={isOptional} onIonChange={(e) => setIsOptional(e.detail.checked)}>
-                  Volitelný Úkol
-                </IonToggle>
-              </IonItem>
-            </IonList>
-            <IonButton expand="block" onClick={handleAddTask}>
-              Vytvořit Úkol
-            </IonButton>
-          </IonContent>
-        </IonModal>
+        <TaskModal
+          isOpen={showTaskModal}
+          onClose={() => setShowTaskModal(false)}
+          questId={selectedQuestId}
+        />
       </IonContent>
     </IonPage>
   );

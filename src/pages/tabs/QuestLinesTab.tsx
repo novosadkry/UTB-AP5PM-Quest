@@ -113,7 +113,7 @@ const QuestLinesTab: React.FC = () => {
                   label="Název"
                   labelPlacement="stacked"
                   value={title}
-                  onIonChange={(e) => setTitle(e.detail.value ?? '')}
+                  onIonInput={(e) => setTitle(e.detail.value ?? '')}
                   placeholder="Zadej název série"
                 />
               </IonItem>
@@ -122,7 +122,7 @@ const QuestLinesTab: React.FC = () => {
                   label="Popis"
                   labelPlacement="stacked"
                   value={description}
-                  onIonChange={(e) => setDescription(e.detail.value ?? '')}
+                  onIonInput={(e) => setDescription(e.detail.value ?? '')}
                   placeholder="Zadej popis"
                   rows={4}
                 />
