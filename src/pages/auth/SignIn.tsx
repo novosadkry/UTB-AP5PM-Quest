@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { firebaseApp } from '@/firebase';
-import { getAuth } from 'firebase/auth';
-import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Redirect } from 'react-router';
 import {
   IonButton,
@@ -28,23 +26,35 @@ import {
 import { lockClosedOutline, logInOutline, mailOutline } from 'ionicons/icons';
 import { Link } from 'react-router-dom';
 
-const auth = getAuth(firebaseApp);
-
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [
-    signInWithEmailAndPassword,
-    user,
-    loading,
-    error,
-  ] = useSignInWithEmailAndPassword(auth);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { user, signIn, loading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return null;
+  }
 
   if (user) {
     return (
       <Redirect to="/tab1" />
     );
   }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await signIn(email, password);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <IonPage>
@@ -57,10 +67,7 @@ const SignIn: React.FC = () => {
         <IonGrid fixed>
           <IonRow className="ion-justify-content-center ion-align-items-center">
             <IonCol sizeXs="12" sizeSm="10" sizeMd="8" sizeLg="6" sizeXl="6">
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                signInWithEmailAndPassword(email, password);
-              }}>
+              <form onSubmit={handleSubmit}>
                 <IonCard className="ion-padding">
                   <IonCardHeader>
                     <IonCardSubtitle>Účet</IonCardSubtitle>
@@ -69,7 +76,7 @@ const SignIn: React.FC = () => {
                   <IonCardContent>
                     {error && (
                       <IonText color="danger">
-                        <IonText className="signin-error">{error.message}</IonText>
+                        <p>{error}</p>
                       </IonText>
                     )}
                     <IonItem lines="full" className="ion-margin-bottom">
