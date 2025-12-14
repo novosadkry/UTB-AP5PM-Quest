@@ -1,4 +1,5 @@
-import { Redirect, Route } from 'react-router-dom';
+import { useMemo } from 'react';
+import { Redirect, Route, useLocation } from 'react-router-dom';
 import {
   IonApp,
   IonIcon,
@@ -52,55 +53,64 @@ import AuthRoute from './AuthRoute';
 
 setupIonicReact();
 
-const isAuthPage =
-  window.location.pathname === '/signin' ||
-  window.location.pathname === '/signup';
+const AppTabs: React.FC = () => {
+  const location = useLocation();
+  const isAuthPage = useMemo(() =>
+    location.pathname === '/signin' ||
+    location.pathname === '/signup', [location]);
 
-const App: React.FC = () => (
-  <IonApp>
-    <AuthProvider>
-      <QuestProvider>
-        <IonReactRouter>
-          <IonTabs>
-            <IonRouterOutlet>
-              <Route exact path="/signin">
-                <SignIn />
-              </Route>
-              <Route exact path="/signup">
-                <SignUp />
-              </Route>
-              <AuthRoute exact path="/tab1">
-                <QuestLinesTab />
-              </AuthRoute>
-              <AuthRoute exact path="/tab2">
-                <QuestsTab />
-              </AuthRoute>
-              <AuthRoute path="/tab3">
-                <ProfileTab />
-              </AuthRoute>
-              <Route exact path="/">
-                <Redirect to="/tab1" />
-              </Route>
-            </IonRouterOutlet>
-            <IonTabBar slot="bottom">
-              <IonTabButton tab="tab1" href="/tab1" disabled={isAuthPage}>
-                <IonIcon aria-hidden="true" icon={list} />
-                <IonLabel>Série</IonLabel>
-              </IonTabButton>
-              <IonTabButton tab="tab2" href="/tab2" disabled={isAuthPage}>
-                <IonIcon aria-hidden="true" icon={clipboard} />
-                <IonLabel>Questy</IonLabel>
-              </IonTabButton>
-              <IonTabButton tab="tab3" href="/tab3" disabled={isAuthPage}>
-                <IonIcon aria-hidden="true" icon={person} />
-                <IonLabel>Profil</IonLabel>
-              </IonTabButton>
-            </IonTabBar>
-          </IonTabs>
-        </IonReactRouter>
-      </QuestProvider>
-    </AuthProvider>
-  </IonApp>
-);
+  return (
+    <IonTabs>
+      <IonRouterOutlet>
+        <Route exact path="/signin">
+          <SignIn />
+        </Route>
+        <Route exact path="/signup">
+          <SignUp />
+        </Route>
+        <AuthRoute exact path="/tab1">
+          <QuestLinesTab />
+        </AuthRoute>
+        <AuthRoute exact path="/tab2">
+          <QuestsTab />
+        </AuthRoute>
+        <AuthRoute path="/tab3">
+          <ProfileTab />
+        </AuthRoute>
+        <Route exact path="/">
+          <Redirect to="/tab1" />
+        </Route>
+      </IonRouterOutlet>
+      <IonTabBar slot="bottom">
+        <IonTabButton tab="tab1" href="/tab1" disabled={isAuthPage}>
+          <IonIcon aria-hidden="true" icon={list} />
+          <IonLabel>Série</IonLabel>
+        </IonTabButton>
+        <IonTabButton tab="tab2" href="/tab2" disabled={isAuthPage}>
+          <IonIcon aria-hidden="true" icon={clipboard} />
+          <IonLabel>Questy</IonLabel>
+        </IonTabButton>
+        <IonTabButton tab="tab3" href="/tab3" disabled={isAuthPage}>
+          <IonIcon aria-hidden="true" icon={person} />
+          <IonLabel>Profil</IonLabel>
+        </IonTabButton>
+      </IonTabBar>
+    </IonTabs>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <IonApp>
+      <AuthProvider>
+        <QuestProvider>
+          <IonReactRouter>
+            <AppTabs />
+          </IonReactRouter>
+        </QuestProvider>
+      </AuthProvider>
+    </IonApp>
+  );
+};
 
 export default App;
