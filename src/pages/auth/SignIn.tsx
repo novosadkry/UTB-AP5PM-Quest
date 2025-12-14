@@ -23,7 +23,12 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { lockClosedOutline, logInOutline, mailOutline } from 'ionicons/icons';
+import {
+  lockClosedOutline,
+  logInOutline,
+  mailOutline,
+  logoGoogle
+} from 'ionicons/icons';
 import { Link } from 'react-router-dom';
 
 const SignIn: React.FC = () => {
@@ -31,7 +36,12 @@ const SignIn: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user, signIn, loading: authLoading } = useAuth();
+  const {
+    user,
+    signIn,
+    signInWithGoogle,
+    loading: authLoading
+  } = useAuth();
 
   if (authLoading) {
     return null;
@@ -49,6 +59,18 @@ const SignIn: React.FC = () => {
     setError(null);
     try {
       await signIn(email, password);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await signInWithGoogle();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -119,6 +141,24 @@ const SignIn: React.FC = () => {
                         <>
                           <IonText>Přihlásit se</IonText>
                           <IonIcon icon={logInOutline} slot="end" />
+                        </>
+                      )}
+                    </IonButton>
+                    <IonButton
+                      expand="block"
+                      shape="round"
+                      type="button"
+                      onClick={handleGoogleSignIn}
+                      color="danger"
+                      disabled={loading}
+                      className="ion-margin-bottom"
+                    >
+                      {loading ? (
+                          <IonSpinner name="crescent" />
+                      ) : (
+                        <>
+                          <IonText>Přihlásit se účtem Google</IonText>
+                          <IonIcon icon={logoGoogle} slot="end" />
                         </>
                       )}
                     </IonButton>

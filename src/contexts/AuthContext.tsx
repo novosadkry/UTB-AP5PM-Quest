@@ -7,6 +7,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -60,8 +61,26 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      await FirebaseAuthentication.signInWithGoogle();
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      throw error;
+    }
+  };
+
+  const context = {
+    user,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    signInWithGoogle
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={context}>
       {children}
     </AuthContext.Provider>
   );
