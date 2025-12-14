@@ -1,10 +1,6 @@
 import React from 'react';
 import { Redirect, Route } from 'react-router-dom';
-import { firebaseApp } from './firebase';
-import { getAuth } from 'firebase/auth';
-import { useAuthState } from 'react-firebase-hooks/auth';
-
-const auth = getAuth(firebaseApp);
+import { useAuth } from '@/contexts/AuthContext';
 
 type AuthRouteProps = React.PropsWithChildren<{
   path: string;
@@ -14,7 +10,12 @@ type AuthRouteProps = React.PropsWithChildren<{
 const AuthRoute: React.FC<AuthRouteProps> = ({
   children, path, exact,
 }: AuthRouteProps) => {
-  const [user] = useAuthState(auth);
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return null;
+  }
+  
   return (
     <Route
       path={path}
