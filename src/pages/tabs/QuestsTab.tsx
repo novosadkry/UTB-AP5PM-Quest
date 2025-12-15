@@ -42,7 +42,7 @@ const QuestsTab: React.FC = () => {
           <IonTitle>Questy</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
+      <IonContent>
         <IonHeader collapse="condense">
           <IonToolbar>
             <IonTitle size="large">Questy</IonTitle>
