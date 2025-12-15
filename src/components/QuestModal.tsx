@@ -128,7 +128,7 @@ const QuestModal: React.FC<QuestModalProps> = ({
                 if (!e.detail.checked) {
                   setDeadline(null);
                 } else {
-                  setDeadline(new Date().toISOString());
+                  setDeadline(new Date(Date.now()).toISOString());
                 }
               }}
             />
@@ -141,7 +141,7 @@ const QuestModal: React.FC<QuestModalProps> = ({
                 value={deadline}
                 onIonChange={(e) => setDeadline(e.detail.value as string)}
                 presentation="date-time"
-                min={new Date().toISOString()}
+                min={new Date(Date.now()).toISOString()}
               />
             </IonModal>
           </IonItem>

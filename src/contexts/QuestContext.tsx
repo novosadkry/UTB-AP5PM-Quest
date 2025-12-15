@@ -134,12 +134,14 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
 
     try {
       const deadlineDate = new Date(quest.deadline);
-      const now = new Date();
+      const now = new Date(Date.now());
 
       if (deadlineDate <= now) return;
 
       const notificationTime = new Date(deadlineDate.getTime() - 60 * 60 * 1000);
-      const scheduleTime = notificationTime > now ? notificationTime : now;
+      const scheduleTime = notificationTime > now
+        ? notificationTime
+        : new Date(now.getTime() + 1000);
 
       const notificationId = getNotificationId(quest.id);
 

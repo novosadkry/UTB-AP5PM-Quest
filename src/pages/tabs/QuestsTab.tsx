@@ -86,14 +86,14 @@ const QuestsTab: React.FC = () => {
   const isDeadlineSoon = (deadline?: string) => {
     if (!deadline) return false;
     const date = new Date(deadline);
-    const now = new Date();
+    const now = new Date(Date.now());
     const hoursDiff = (date.getTime() - now.getTime()) / (1000 * 60 * 60);
     return hoursDiff > 0 && hoursDiff <= 24;
   };
 
   const isDeadlinePassed = (deadline?: string) => {
     if (!deadline) return false;
-    return new Date(deadline) < new Date();
+    return new Date(deadline) < new Date(Date.now());
   };
 
   return (
