@@ -1,4 +1,4 @@
-export interface Task {
+export interface Subtask {
   id: string;
   title: string;
   description: string;
@@ -10,10 +10,11 @@ export interface Quest {
   id: string;
   title: string;
   description: string;
-  isMainQuest: boolean;
-  tasks: Task[];
+  isOptional: boolean;
+  subtasks: Subtask[];
   questLineId: string;
   isCompleted: boolean;
+  deadline: string | null;
 }
 
 export interface QuestLine {

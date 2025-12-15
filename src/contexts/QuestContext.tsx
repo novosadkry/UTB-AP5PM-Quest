@@ -1,32 +1,47 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Quest, QuestLine, Task } from '@/types/quest';
+import React, { useState, useEffect } from 'react';
+import { Quest, QuestLine, Subtask } from '@/types/quest';
 import { useAuth } from './AuthContext';
 import { FirebaseFirestore } from '@capacitor-firebase/firestore';
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { QuestContext } from '@/hooks/useQuests';
 
 type AddQuestLine = Omit<QuestLine, 'id'>;
-type AddQuest = Omit<Quest, 'id' | 'tasks' | 'isCompleted'>;
-type AddTask = Omit<Task, 'id' | 'isCompleted'>;
+type AddQuest = Omit<Quest, 'id' | 'subtasks' | 'isCompleted'>;
+type AddSubtask = Omit<Subtask, 'id' | 'isCompleted'>;
 
-interface QuestContextType {
+export interface QuestContextType {
   questLines: QuestLine[];
   quests: Quest[];
   loading: boolean;
   addQuestLine: (questLine: AddQuestLine) => void;
   addQuest: (quest: AddQuest) => void;
-  addTask: (questId: string, task: AddTask) => void;
-  toggleTask: (questId: string, taskId: string) => void;
+  addSubtask: (questId: string, subtask: AddSubtask) => void;
+  toggleQuest: (questId: string) => void;
+  toggleSubtask: (questId: string, subtaskId: string) => void;
   deleteQuestLine: (questLineId: string) => void;
   deleteQuest: (questId: string) => void;
-  deleteTask: (questId: string, taskId: string) => void;
+  deleteSubtask: (questId: string, subtaskId: string) => void;
 }
-
-const QuestContext = createContext<QuestContextType | undefined>(undefined);
 
 export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const [questLines, setQuestLines] = useState<QuestLine[]>([]);
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notificationPermission, setNotificationPermission] = useState(false);
   const { user } = useAuth();
+
+  // Request notification permissions on mount
+  useEffect(() => {
+    const requestPermissions = async () => {
+      try {
+        const result = await LocalNotifications.requestPermissions();
+        setNotificationPermission(result.display === 'granted');
+      } catch (error) {
+        console.error('Error requesting notification permissions:', error);
+      }
+    };
+    requestPermissions();
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -104,6 +119,64 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     }
   };
 
+  const getNotificationId = (questId: string): number => {
+    let hash = 0;
+    for (let i = 0; i < questId.length; i++) {
+      const char = questId.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash) % 2147483647;
+  };
+
+  const scheduleNotification = async (quest: Quest) => {
+    if (!notificationPermission || !quest.deadline) return;
+
+    try {
+      const deadlineDate = new Date(quest.deadline);
+      const now = new Date();
+
+      if (deadlineDate <= now) return;
+
+      const notificationTime = new Date(deadlineDate.getTime() - 60 * 60 * 1000);
+      const scheduleTime = notificationTime > now ? notificationTime : now;
+
+      const notificationId = getNotificationId(quest.id);
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: notificationId,
+            title: 'Připomínka termínu questu',
+            body: `Quest "${quest.title}" brzy vyprší!`,
+            schedule: { at: scheduleTime },
+            smallIcon: 'ic_launcher',
+          },
+        ],
+      });
+    } catch (error) {
+      console.error('Error scheduling notification:', error);
+    }
+  };
+
+  const cancelNotification = async (questId: string) => {
+    try {
+      const notificationId = getNotificationId(questId);
+      await LocalNotifications.cancel({ notifications: [{ id: notificationId }] });
+    } catch (error) {
+      console.error('Error canceling notification:', error);
+    }
+  };
+
+  const calculateQuestCompletion = (subtasks: Subtask[]): boolean => {
+    if (subtasks.length === 0) return false;
+    const requiredSubtasks = subtasks.filter(st => !st.isOptional);
+
+    return requiredSubtasks.length === 0
+      ? subtasks.every(st => st.isCompleted)
+      : requiredSubtasks.every(st => st.isCompleted);
+  };
+
   const addQuest = async (quest: AddQuest) => {
     if (!user) return;
 
@@ -111,7 +184,7 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     const newQuest: Quest = {
       ...quest,
       id,
-      tasks: [],
+      subtasks: [],
       isCompleted: false,
     };
 
@@ -120,26 +193,30 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         reference: `users/${user.uid}/quests/${id}`,
         data: newQuest,
       });
+
+      if (newQuest.deadline) {
+        await scheduleNotification(newQuest);
+      }
     } catch (error) {
       console.error('Error adding quest:', error);
     }
   };
 
-  const addTask = async (questId: string, task: AddTask) => {
+  const addSubtask = async (questId: string, subtask: AddSubtask) => {
     if (!user) return;
 
     const quest = quests.find(q => q.id === questId);
     if (!quest) return;
 
-    const newTask: Task = {
-      ...task,
+    const newSubtask: Subtask = {
+      ...subtask,
       id: crypto.randomUUID(),
       isCompleted: false,
     };
 
     const updatedQuest = {
       ...quest,
-      tasks: [...quest.tasks, newTask],
+      subtasks: [...quest.subtasks, newSubtask],
     };
 
     try {
@@ -148,28 +225,22 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         data: updatedQuest,
       });
     } catch (error) {
-      console.error('Error adding task:', error);
+      console.error('Error adding subtask:', error);
     }
   };
 
-  const toggleTask = async (questId: string, taskId: string) => {
+  const toggleQuest = async (questId: string) => {
     if (!user) return;
 
     const quest = quests.find(q => q.id === questId);
     if (!quest) return;
 
-    const updatedTasks = quest.tasks.map(t =>
-      t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
-    );
-    const requiredTasks = updatedTasks.filter(t => !t.isOptional);
-    const allRequiredCompleted = requiredTasks.length === 0
-      ? updatedTasks.length > 0 && updatedTasks.every(t => t.isCompleted)
-      : requiredTasks.every(t => t.isCompleted);
+    const wasCompleted = quest.isCompleted;
+    const isNowCompleted = !wasCompleted;
 
     const updatedQuest = {
       ...quest,
-      tasks: updatedTasks,
-      isCompleted: allRequiredCompleted,
+      isCompleted: isNowCompleted,
     };
 
     try {
@@ -177,8 +248,43 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         reference: `users/${user.uid}/quests/${questId}`,
         data: updatedQuest,
       });
+      if (isNowCompleted && !wasCompleted) {
+        await cancelNotification(questId);
+      }
     } catch (error) {
-      console.error('Error toggling task:', error);
+      console.error('Error toggling quest:', error);
+    }
+  };
+
+  const toggleSubtask = async (questId: string, subtaskId: string) => {
+    if (!user) return;
+
+    const quest = quests.find(q => q.id === questId);
+    if (!quest) return;
+
+    const updatedSubtasks = quest.subtasks.map(st =>
+      st.id === subtaskId ? { ...st, isCompleted: !st.isCompleted } : st
+    );
+
+    const wasCompleted = quest.isCompleted;
+    const isNowCompleted = calculateQuestCompletion(updatedSubtasks);
+
+    const updatedQuest = {
+      ...quest,
+      subtasks: updatedSubtasks,
+      isCompleted: isNowCompleted,
+    };
+
+    try {
+      await FirebaseFirestore.setDocument({
+        reference: `users/${user.uid}/quests/${questId}`,
+        data: updatedQuest,
+      });
+      if (isNowCompleted && !wasCompleted) {
+        await cancelNotification(questId);
+      }
+    } catch (error) {
+      console.error('Error toggling subtask:', error);
     }
   };
 
@@ -186,6 +292,8 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     if (!user) return;
 
     try {
+      const questsToDelete = quests.filter(q => q.questLineId === questLineId);
+      await Promise.all(questsToDelete.map(quest => deleteQuest(quest.id)));
       await FirebaseFirestore.deleteDocument({
         reference: `users/${user.uid}/questLines/${questLineId}`,
       });
@@ -198,6 +306,7 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     if (!user) return;
 
     try {
+      await cancelNotification(questId);
       await FirebaseFirestore.deleteDocument({
         reference: `users/${user.uid}/quests/${questId}`,
       });
@@ -206,15 +315,20 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     }
   };
 
-  const deleteTask = async (questId: string, taskId: string) => {
+  const deleteSubtask = async (questId: string, subtaskId: string) => {
     if (!user) return;
 
     const quest = quests.find(q => q.id === questId);
     if (!quest) return;
 
+    const updatedSubtasks = quest.subtasks.filter(st => st.id !== subtaskId);
+    const wasCompleted = quest.isCompleted;
+    const isNowCompleted = calculateQuestCompletion(updatedSubtasks);
+
     const updatedQuest = {
       ...quest,
-      tasks: quest.tasks.filter(t => t.id !== taskId),
+      subtasks: updatedSubtasks,
+      isCompleted: isNowCompleted,
     };
 
     try {
@@ -222,8 +336,11 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         reference: `users/${user.uid}/quests/${questId}`,
         data: updatedQuest,
       });
+      if (isNowCompleted && !wasCompleted) {
+        await cancelNotification(questId);
+      }
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error('Error deleting subtask:', error);
     }
   };
 
@@ -235,22 +352,15 @@ export const QuestProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         loading,
         addQuestLine,
         addQuest,
-        addTask,
-        toggleTask,
+        addSubtask,
+        toggleQuest,
+        toggleSubtask,
         deleteQuestLine,
         deleteQuest,
-        deleteTask,
+        deleteSubtask,
       }}
     >
       {children}
     </QuestContext.Provider>
   );
-};
-
-export const useQuests = () => {
-  const context = useContext(QuestContext);
-  if (!context) {
-    throw new Error('useQuests must be used within a QuestProvider');
-  }
-  return context;
 };

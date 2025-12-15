@@ -11,43 +11,37 @@ import {
   IonItem,
   IonInput,
   IonTextarea,
-  IonToggle,
 } from '@ionic/react';
-import { useQuests } from '@/contexts/QuestContext';
+import { useQuests } from '@/hooks/useQuests';
 
-type TaskModalProps = {
+type QuestLineModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  questId: string | null;
 };
 
-const TaskModal: React.FC<TaskModalProps> = ({
+const QuestLineModal: React.FC<QuestLineModalProps> = ({
   isOpen,
   onClose,
-  questId,
 }) => {
-  const { addTask } = useQuests();
+  const { addQuestLine } = useQuests();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [isOptional, setIsOptional] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       setTitle('');
       setDescription('');
-      setIsOptional(false);
     }
-  }, [isOpen, questId]);
+  }, [isOpen]);
 
   const handleSubmit = () => {
-    if (!questId || !title.trim()) {
+    if (!title.trim()) {
       return;
     }
 
-    addTask(questId, {
+    addQuestLine({
       title,
       description,
-      isOptional,
     });
 
     onClose();
@@ -57,7 +51,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
     <IonModal isOpen={isOpen} onDidDismiss={onClose}>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Nový Úkol</IonTitle>
+          <IonTitle>Nová série Questů</IonTitle>
           <IonButtons slot="end">
             <IonButton onClick={onClose}>Zavřít</IonButton>
           </IonButtons>
@@ -71,7 +65,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
               labelPlacement="stacked"
               value={title}
               onIonInput={(e) => setTitle(e.detail.value ?? '')}
-              placeholder="Zadej název úkolu"
+              placeholder="Zadej název série"
             />
           </IonItem>
           <IonItem lines="full" className="ion-margin-bottom">
@@ -84,14 +78,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
               rows={4}
             />
           </IonItem>
-          <IonItem lines="full" className="ion-margin-bottom">
-            <IonToggle
-              checked={isOptional}
-              onIonChange={(e) => setIsOptional(e.detail.checked)}
-            >
-              Volitelný Úkol
-            </IonToggle>
-          </IonItem>
         </IonList>
         <IonButton
           expand="block"
@@ -99,11 +85,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
           className="ion-margin-top"
           onClick={handleSubmit}
         >
-          Vytvořit Úkol
+          Vytvořit Sérii
         </IonButton>
       </IonContent>
     </IonModal>
   );
 };
 
-export default TaskModal;
+export default QuestLineModal;

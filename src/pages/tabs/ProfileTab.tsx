@@ -18,7 +18,7 @@ import {
 } from '@ionic/react';
 import { logOutOutline, personCircleOutline, statsChartOutline } from 'ionicons/icons';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuests } from '@/contexts/QuestContext';
+import { useQuests } from '@/hooks/useQuests';
 
 const ProfileTab: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -35,9 +35,9 @@ const ProfileTab: React.FC = () => {
   const totalQuestLines = questLines.length;
   const totalQuests = quests.length;
   const completedQuests = quests.filter(q => q.isCompleted).length;
-  const totalTasks = quests.reduce((acc, q) => acc + q.tasks.length, 0);
-  const completedTasks = quests.reduce(
-    (acc, q) => acc + q.tasks.filter(t => t.isCompleted).length,
+  const totalSubtasks = quests.reduce((acc, q) => acc + q.subtasks.length, 0);
+  const completedSubtasks = quests.reduce(
+    (acc, q) => acc + q.subtasks.filter(st => st.isCompleted).length,
     0
   );
 
@@ -100,9 +100,9 @@ const ProfileTab: React.FC = () => {
                 </IonBadge>
               </IonItem>
               <IonItem>
-                <IonLabel>Úkoly</IonLabel>
-                <IonBadge slot="end" color={completedTasks === totalTasks && totalTasks > 0 ? 'success' : 'primary'}>
-                  {completedTasks}/{totalTasks}
+                <IonLabel>Podúkoly</IonLabel>
+                <IonBadge slot="end" color={completedSubtasks === totalSubtasks && totalSubtasks > 0 ? 'success' : 'primary'}>
+                  {completedSubtasks}/{totalSubtasks}
                 </IonBadge>
               </IonItem>
             </IonList>

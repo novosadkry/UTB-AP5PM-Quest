@@ -14,8 +14,11 @@ import {
   IonInput,
   IonTextarea,
   IonToggle,
+  IonDatetimeButton,
+  IonDatetime,
+  IonLabel,
 } from '@ionic/react';
-import { useQuests } from '@/contexts/QuestContext';
+import { useQuests } from '@/hooks/useQuests';
 
 type QuestModalProps = {
   isOpen: boolean;
@@ -30,14 +33,18 @@ const QuestModal: React.FC<QuestModalProps> = ({
   const [questLineId, setQuestLineId] = useState<string>('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [isMainQuest, setIsMainQuest] = useState(true);
+  const [isOptional, setIsOptional] = useState(false);
+  const [hasDeadline, setHasDeadline] = useState(false);
+  const [deadline, setDeadline] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setQuestLineId('');
       setTitle('');
       setDescription('');
-      setIsMainQuest(true);
+      setIsOptional(false);
+      setHasDeadline(false);
+      setDeadline(null);
     }
   }, [isOpen]);
 
@@ -49,8 +56,9 @@ const QuestModal: React.FC<QuestModalProps> = ({
     addQuest({
       title,
       description,
-      isMainQuest,
+      isOptional,
       questLineId,
+      deadline,
     });
 
     onClose();
@@ -104,11 +112,38 @@ const QuestModal: React.FC<QuestModalProps> = ({
           </IonItem>
           <IonItem lines="full" className="ion-margin-bottom">
             <IonToggle
-              checked={isMainQuest}
-              onIonChange={(e) => setIsMainQuest(e.detail.checked)}
+              checked={isOptional}
+              onIonChange={(e) => setIsOptional(e.detail.checked)}
             >
-              Hlavní Quest
+              Volitelný Quest
             </IonToggle>
+          </IonItem>
+          <IonItem lines="full" className="ion-margin-bottom">
+            <IonLabel>Má deadline?</IonLabel>
+            <IonToggle
+              slot="end"
+              checked={hasDeadline}
+              onIonChange={(e) => {
+                setHasDeadline(e.detail.checked);
+                if (!e.detail.checked) {
+                  setDeadline(null);
+                } else {
+                  setDeadline(new Date().toISOString());
+                }
+              }}
+            />
+          </IonItem>
+          <IonItem lines="full" className="ion-margin-bottom" disabled={!hasDeadline}>
+            <IonDatetimeButton datetime="deadline-datetime" />
+            <IonModal keepContentsMounted={true}>
+              <IonDatetime
+                id="deadline-datetime"
+                value={deadline}
+                onIonChange={(e) => setDeadline(e.detail.value as string)}
+                presentation="date-time"
+                min={new Date().toISOString()}
+              />
+            </IonModal>
           </IonItem>
         </IonList>
         <IonButton

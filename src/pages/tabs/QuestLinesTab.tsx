@@ -8,35 +8,39 @@ import {
   IonFab,
   IonFabButton,
   IonIcon,
-  IonList,
-  IonItem,
   IonCard,
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonModal,
-  IonButton,
-  IonInput,
-  IonTextarea,
-  IonButtons,
   IonBadge,
   IonCardSubtitle,
+  IonItem,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
+  IonAlert,
 } from '@ionic/react';
-import { add } from 'ionicons/icons';
-import { useQuests } from '@/contexts/QuestContext';
+import { add, trash } from 'ionicons/icons';
+import { useQuests } from '@/hooks/useQuests';
+import QuestLineModal from '@/components/QuestLineModal';
 
 const QuestLinesTab: React.FC = () => {
-  const { questLines, quests, loading, addQuestLine } = useQuests();
+  const { questLines, quests, loading, deleteQuestLine } = useQuests();
   const [showModal, setShowModal] = useState(false);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [deleteAlert, setDeleteAlert] = useState<{ show: boolean; questLineId: string; title: string }>({
+    show: false,
+    questLineId: '',
+    title: '',
+  });
 
-  const handleAddQuestLine = () => {
-    if (title.trim()) {
-      addQuestLine({ title, description });
-      setTitle('');
-      setDescription('');
-      setShowModal(false);
+  const handleDeleteQuestLine = (questLineId: string, title: string) => {
+    setDeleteAlert({ show: true, questLineId, title });
+  };
+
+  const confirmDelete = () => {
+    if (deleteAlert.questLineId) {
+      deleteQuestLine(deleteAlert.questLineId);
+      setDeleteAlert({ show: false, questLineId: '', title: '' });
     }
   };
 
@@ -69,15 +73,26 @@ const QuestLinesTab: React.FC = () => {
 
               return (
                 <IonCard key={questLine.id}>
-                  <IonCardHeader>
-                    <IonCardTitle>{questLine.title}</IonCardTitle>
-                    <IonCardSubtitle>{questLine.description}</IonCardSubtitle>
-                  </IonCardHeader>
-                  <IonCardContent>
-                    <IonBadge color={completedQuests === totalQuests && totalQuests > 0 ? 'success' : 'primary'}>
-                      {completedQuests}/{totalQuests} Questů splněno
-                    </IonBadge>
-                  </IonCardContent>
+                  <IonItemSliding>
+                    <IonItem lines="none" className="ion-no-padding">
+                      <div style={{ width: '100%' }}>
+                        <IonCardHeader>
+                          <IonCardTitle>{questLine.title}</IonCardTitle>
+                          <IonCardSubtitle>{questLine.description}</IonCardSubtitle>
+                        </IonCardHeader>
+                        <IonCardContent>
+                          <IonBadge color={completedQuests === totalQuests && totalQuests > 0 ? 'success' : 'primary'}>
+                            {completedQuests}/{totalQuests} Questů splněno
+                          </IonBadge>
+                        </IonCardContent>
+                      </div>
+                    </IonItem>
+                    <IonItemOptions side="end">
+                      <IonItemOption color="danger" onClick={() => handleDeleteQuestLine(questLine.id, questLine.title)}>
+                        <IonIcon slot="icon-only" icon={trash} />
+                      </IonItemOption>
+                    </IonItemOptions>
+                  </IonItemSliding>
                 </IonCard>
               );
             })}
@@ -91,48 +106,34 @@ const QuestLinesTab: React.FC = () => {
           </>
         )}
 
+        <IonAlert
+          isOpen={deleteAlert.show}
+          onDidDismiss={() => setDeleteAlert({ show: false, questLineId: '', title: '' })}
+          header="Smazat sérii questů?"
+          message={`Opravdu chceš smazat sérii "${deleteAlert.title}"? Tato akce smaže také všechny questy a úkoly v této sérii. Tato akce je nevratná.`}
+          buttons={[
+            {
+              text: 'Zrušit',
+              role: 'cancel',
+            },
+            {
+              text: 'Smazat',
+              role: 'destructive',
+              handler: confirmDelete,
+            },
+          ]}
+        />
+
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setShowModal(true)}>
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
 
-        <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
-          <IonHeader>
-            <IonToolbar>
-              <IonTitle>Nová série Questů</IonTitle>
-              <IonButtons slot="end">
-                <IonButton onClick={() => setShowModal(false)}>Zavřít</IonButton>
-              </IonButtons>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent>
-            <IonList>
-              <IonItem>
-                <IonInput
-                  label="Název"
-                  labelPlacement="stacked"
-                  value={title}
-                  onIonInput={(e) => setTitle(e.detail.value ?? '')}
-                  placeholder="Zadej název série"
-                />
-              </IonItem>
-              <IonItem>
-                <IonTextarea
-                  label="Popis"
-                  labelPlacement="stacked"
-                  value={description}
-                  onIonInput={(e) => setDescription(e.detail.value ?? '')}
-                  placeholder="Zadej popis"
-                  rows={4}
-                />
-              </IonItem>
-            </IonList>
-            <IonButton expand="block" onClick={handleAddQuestLine}>
-              Vytvořit Sérii
-            </IonButton>
-          </IonContent>
-        </IonModal>
+        <QuestLineModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+        />
       </IonContent>
     </IonPage>
   );
