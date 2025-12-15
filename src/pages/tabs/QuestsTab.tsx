@@ -30,17 +30,30 @@ import { useQuests } from '@/hooks/useQuests';
 import QuestModal from '@/components/QuestModal';
 import SubtaskModal from '@/components/SubtaskModal';
 
+type DeleteQuestAlertState = {
+  show: boolean;
+  questId: string;
+  title: string;
+};
+
+type DeleteSubtaskAlertState = {
+  show: boolean;
+  questId: string;
+  subtaskId: string;
+  title: string;
+};
+
 const QuestsTab: React.FC = () => {
   const { questLines, quests, toggleQuest, toggleSubtask, deleteQuest, deleteSubtask } = useQuests();
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [showSubtaskModal, setShowSubtaskModal] = useState(false);
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null);
-  const [deleteQuestAlert, setDeleteQuestAlert] = useState<{ show: boolean; questId: string; title: string }>({
+  const [deleteQuestAlert, setDeleteQuestAlert] = useState<DeleteQuestAlertState>({
     show: false,
     questId: '',
     title: '',
   });
-  const [deleteSubtaskAlert, setDeleteSubtaskAlert] = useState<{ show: boolean; questId: string; subtaskId: string; title: string }>({
+  const [deleteSubtaskAlert, setDeleteSubtaskAlert] = useState<DeleteSubtaskAlertState>({
     show: false,
     questId: '',
     subtaskId: '',

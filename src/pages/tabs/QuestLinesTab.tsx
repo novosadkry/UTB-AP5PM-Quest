@@ -24,10 +24,16 @@ import { add, trash } from 'ionicons/icons';
 import { useQuests } from '@/hooks/useQuests';
 import QuestLineModal from '@/components/QuestLineModal';
 
+type DeleteAlertState = {
+  show: boolean;
+  questLineId: string;
+  title: string;
+};
+
 const QuestLinesTab: React.FC = () => {
   const { questLines, quests, loading, deleteQuestLine } = useQuests();
   const [showModal, setShowModal] = useState(false);
-  const [deleteAlert, setDeleteAlert] = useState<{ show: boolean; questLineId: string; title: string }>({
+  const [deleteAlert, setDeleteAlert] = useState<DeleteAlertState>({
     show: false,
     questLineId: '',
     title: '',
