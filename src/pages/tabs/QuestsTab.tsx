@@ -140,36 +140,46 @@ const QuestsTab: React.FC = () => {
                               <IonLabel>
                                 <h2>{quest.title}</h2>
                                 <p>{quest.description}</p>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                  {quest.isCompleted && (
+                                    <IonBadge color="success">
+                                      <IonIcon icon={checkmark} style={{ marginRight: '4px' }} />
+                                      Splněno
+                                    </IonBadge>
+                                  )}
+                                  {quest.isOptional && (
+                                    <IonBadge color="tertiary">
+                                      Volitelný
+                                    </IonBadge>
+                                  )}
+                                  {quest.deadline && (
+                                    <IonBadge
+                                      color={
+                                        quest.isCompleted
+                                          ? 'success'
+                                          : isDeadlinePassed(quest.deadline)
+                                              ? 'danger'
+                                              : isDeadlineSoon(quest.deadline)
+                                                ? 'warning'
+                                                : 'medium'
+                                      }
+                                    >
+                                      <IonIcon icon={time} style={{ marginRight: '4px' }} />
+                                      {formatDeadline(quest.deadline)}
+                                    </IonBadge>
+                                  )}
+                                </div>
                               </IonLabel>
-                              {quest.deadline && (
-                                <IonBadge
-                                  slot="end"
-                                  color={
-                                    isDeadlinePassed(quest.deadline)
-                                      ? 'danger'
-                                      : isDeadlineSoon(quest.deadline)
-                                      ? 'warning'
-                                      : 'medium'
-                                  }
-                                >
-                                  <IonIcon icon={time} style={{ marginRight: '4px' }} />
-                                  {formatDeadline(quest.deadline)}
-                                </IonBadge>
-                              )}
-                              <IonBadge slot="end" color="tertiary" className={quest.isOptional ? '' : 'ion-display-none'}>
-                                Volitelný
-                              </IonBadge>
-                              <IonBadge slot="end" color="success" className={quest.isCompleted ? '' : 'ion-display-none'}>
-                                <IonIcon icon={checkmark} /> Splněno
-                              </IonBadge>
                             </IonItem>
                             <IonList slot="content">
                               {quest.subtasks.map((subtask) => (
                                 <IonItemSliding key={subtask.id}>
                                   <IonItem>
-                                    <IonBadge slot="start" color="tertiary" className={subtask.isOptional ? '' : 'ion-display-none'}>
-                                      Volitelný
-                                    </IonBadge>
+                                    {subtask.isOptional && (
+                                      <IonBadge color="tertiary" slot="start" style={{ marginRight: '8px' }}>
+                                        Volitelný
+                                      </IonBadge>
+                                    )}
                                     <IonCheckbox
                                       checked={subtask.isCompleted}
                                       onIonChange={() => toggleSubtask(quest.id, subtask.id)}
